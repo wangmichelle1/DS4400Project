@@ -8,21 +8,23 @@ from imblearn.under_sampling import RandomUnderSampler
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import stopwords
 
+# Read in original dataset as a pandas dataframe
 df = pd.read_csv('AI_Human.csv')
 
+# Split data into X and y 
 X = df['text'].values
 y = df['generated'].values
 
-# discarding 90% of the data
+# Discard 90% of the data
 X, _, y, _ = train_test_split(X, y, test_size=0.9, random_state=42)
 
-# lowercase all words
+# Lowercase all words
 X = [word.lower() for word in tqdm(X)]
 
-# remove newline characters
+# Remove newline characters
 X = [word.replace("\n", "") for word in tqdm(X)]
 
-# remove punctuation and numbers
+# Remove punctuation and numbers
 X = [re.sub(r'[^a-zA-Z\s]', '', word) for word in tqdm(X)]
 
 class Lemmatizer:
@@ -37,12 +39,20 @@ class Lemmatizer:
         filtered_words = [self.lemmatizer.lemmatize(word) for word in words if word not in self.stopwords]
         return ' '.join(filtered_words)
 
+# Perform lemmazation
 lemmatizer = Lemmatizer()
 X = [lemmatizer.lemmatize(word) for word in tqdm(X)]
-
+# Cast x into an array
 X = np.asarray(X)
 
+# Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Undersample the data to account for class imbalance
 rus = RandomUnderSampler(random_state=42)
 X_resampled, y_resampled = rus.fit_resample(X_train.reshape(-1, 1), y_train.reshape(-1, 1))
+
+np.save('X_train.npy', X_resampled)
+np.save('X_test.npy', X_test)
+np.save('y_train.npy', y_resampled)
+np.savee('y_test.npy', y_test)
